@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,36 +8,48 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const students = [
-  { id: 1, name: 'Alice' },
-  { id: 2, name: 'Bob' },
-  { id: 3, name: 'Charlie' },
-];
-
 const StudentList = () => {
   const navigation = useNavigation();
-
+  const [isLoading, setLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  getUsers = () => {
+    fetch('https://jsonplaceholder.typicode.com/users/')
+      .then((response) => response.json())
+      .then((json) => setUsers(json))
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    setLoading(true);
+    getUsers();
+  }, []);
   return (
-    <FlatList
-      style={styles.flatList}
-      contentContainerStyle={styles.contentContainer}
-      data={students}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('StudentDetails', {
-              studentId: item.id,
-              studentName: item.name,
-            })
-          }
-        >
-          <View style={styles.itemContainer}>
-            <Text style={styles.nameText}>{item.name}</Text>
-          </View>
-        </TouchableOpacity>
+    <View style={{ padding: 20 }}>
+      {isLoading ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          data={users}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('StudentDetails', {
+                  studentId: item.id,
+                  studentName: item.name,
+                })
+              }
+            >
+              <View style={styles.itemContainer}>
+                <Text style={styles.nameText}>
+                  {item.id}-{item.name}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={({ id }) => id.toString()}
+        />
       )}
-      keyExtractor={(item) => item.id.toString()}
-    />
+    </View>
   );
 };
 const styles = StyleSheet.create({
