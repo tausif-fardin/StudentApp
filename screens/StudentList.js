@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import studentData from '../assets/MOCK_DATA.json';
+
 import {
   View,
   Text,
@@ -10,22 +12,31 @@ import { useNavigation } from '@react-navigation/native';
 
 const StudentList = () => {
   const navigation = useNavigation();
-  const [isLoading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
-  getUsers = () => {
-    fetch('https://jsonplaceholder.typicode.com/users/')
-      .then((response) => response.json())
-      .then((json) => setUsers(json))
-      .catch((error) => console.error(error))
-      .finally(() => setLoading(false));
+  const [page, setPage] = useState(1);
+
+  getUsers = (pageNumber) => {
+    const startIndex = (pageNumber - 1) * 10;
+    const endIndex = startIndex + 10;
+    const pageData = studentData.slice(startIndex, endIndex);
+    setUsers(pageData);
+    //console.log(pageData);
+    setLoading(false);
   };
-  useEffect(() => {
+
+  loadMore = () => {
+    setPage(page + 1);
     setLoading(true);
-    getUsers();
-  }, []);
+  };
+
+  useEffect(() => {
+    getUsers(page);
+  }, [page]);
+
   return (
     <View style={{ padding: 20 }}>
-      {isLoading ? (
+      {loading ? (
         <Text>Loading...</Text>
       ) : (
         <FlatList
@@ -35,18 +46,25 @@ const StudentList = () => {
               onPress={() =>
                 navigation.navigate('StudentDetails', {
                   studentId: item.id,
-                  studentName: item.name,
+                  studentImage: item.picture,
+                  studentFName: item.first_name,
+                  studentLName: item.last_name,
+                  studentEmail: item.email,
+                  studentGender: item.gender,
+                  studentClass: item.class,
                 })
               }
             >
               <View style={styles.itemContainer}>
                 <Text style={styles.nameText}>
-                  {item.id}-{item.name}
+                  {item.id}-{item.first_name}
                 </Text>
               </View>
             </TouchableOpacity>
           )}
           keyExtractor={({ id }) => id.toString()}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
         />
       )}
     </View>
