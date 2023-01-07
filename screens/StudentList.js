@@ -29,7 +29,7 @@ const StudentList = () => {
     setLoading(true);
     setTimeout(function () {
       // Load the next page of students
-      const nextStudents = DATA.slice(students.length, students.length + 10);
+      const nextStudents = DATA.slice(students.length, students.length + 20);
       if (nextStudents.length === 0) {
         // There are no more pages to load
         setHasMorePages(false);
